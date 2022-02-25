@@ -1,5 +1,34 @@
 <script>
+	import { initializeApp, getApps, getApp } from 'firebase/app';
+	import { getFirestore } from 'firebase/firestore';
+	import { firebaseConfig } from '$lib/firebaseConfig';
+	import { browser } from '$app/env';
+	import { collection, onSnapshot } from 'firebase/firestore';
+
+	let firebaseApp;
+	let db;
+	let colRef;
+	if (browser) {
+		if (getApps().length === 0) {
+			firebaseApp = initializeApp(firebaseConfig);
+		} else {
+			getApp();
+		}
+		db = getFirestore();
+		colRef = collection(db, 'todos');
+	}
+
 	let todos = [];
+	const unsubscribe =
+		browser &&
+		onSnapshot(colRef, (querySnapshot) => {
+			let firebaseTodos = [];
+			querySnapshot.forEach((doc) => {
+				let todo = { ...doc.data(), id: doc.id };
+				firebaseTodos = [todo, ...firebaseTodos];
+			});
+			todos = firebaseTodos;
+		});
 
 	let newTodo = '';
 
