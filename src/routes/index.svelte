@@ -1,9 +1,16 @@
 <script>
 	import { initializeApp, getApps, getApp } from 'firebase/app';
-	import { getFirestore } from 'firebase/firestore';
 	import { firebaseConfig } from '$lib/firebaseConfig';
 	import { browser } from '$app/env';
-	import { collection, onSnapshot } from 'firebase/firestore';
+	import {
+		getFirestore,
+		collection,
+		onSnapshot,
+		doc,
+		updateDoc,
+		deleteDoc,
+		addDoc
+	} from 'firebase/firestore';
 
 	let firebaseApp;
 	let db;
@@ -32,20 +39,27 @@
 
 	let newTodo = '';
 
-	const addTodo = () => {
-		console.log(todos);
-		todos = [...todos, { task: newTodo, isComplete: false, createdAt: new Date() }];
+	const addTodo = async () => {
+		// todos = [...todos, { task: newTodo, isComplete: false, createdAt: new Date() }];
+		const docRef = await addDoc(collection(db, 'todos'), {
+			task: newTodo,
+			isComplete: false,
+			createdAt: new Date()
+		});
 		newTodo = '';
 	};
 
-	const markTodoAsComplete = (index) => {
-		todos[index].isComplete = !todos[index].isComplete;
-		console.log(todos);
+	const markTodoAsComplete = async (item) => {
+		// todos[index].isComplete = !todos[index].isComplete;
+		await updateDoc(doc(db, 'todos', item.id), {
+			isComplete: !item.isComplete
+		});
 	};
 
-	const deleteTodo = (index) => {
-		let deleteItem = todos[index];
-		todos = todos.filter((item) => item != deleteItem);
+	const deleteTodo = async (id) => {
+		// let deleteItem = todos[index];
+		// todos = todos.filter((item) => item != deleteItem);
+		await deleteDoc(doc(db, 'todos', id));
 	};
 
 	let error = '';
@@ -63,15 +77,15 @@
 <button on:click={addTodo}>Add</button>
 
 <ol>
-	{#each todos as todo, index}
+	{#each todos as todo}
 		<!-- if isComplete==true, class='complete' -->
 		<li>
 			<span class:complete={todo.isComplete}>
 				{todo.task}
 			</span>
 			<span>
-				<button on:click={() => markTodoAsComplete(index)}>✔</button>
-				<button on:click={() => deleteTodo(index)}>❌</button>
+				<button on:click={() => markTodoAsComplete(todo)}>✔</button>
+				<button on:click={() => deleteTodo(todo.id)}>❌</button>
 			</span>
 		</li>
 	{:else}
