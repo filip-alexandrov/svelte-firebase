@@ -18,6 +18,16 @@
 		let deleteItem = todos[index];
 		todos = todos.filter((item) => item != deleteItem);
 	};
+
+	let error = '';
+	const keyIsPressed = (event) => {
+		if (event.key === 'Enter' && newTodo != '') {
+			addTodo();
+			error = '';
+		} else if (event.key === 'Enter') {
+			error = 'Todo is empty';
+		}
+	};
 </script>
 
 <input type="text" placeholder="Add a task" bind:value={newTodo} />
@@ -38,10 +48,16 @@
 	{:else}
 		<p>No Todos</p>
 	{/each}
+	<p class="error">{error}</p>
 </ol>
+
+<svelte:window on:keydown={keyIsPressed} />
 
 <style>
 	.complete {
 		text-decoration: line-through;
+	}
+	.error {
+		color: red;
 	}
 </style>
